@@ -1,321 +1,370 @@
 <!DOCTYPE html>
-<html lang="ru" class="scroll-smooth">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LUNA DLC — WINTER PRE-BETA</title>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
-    
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        luna: {
-                            primary: '#00D4FF', // Ледяной синий
-                            dark: '#050A18',
-                            card: '#0A1128',
-                            accent: '#FFD700', // Золото для акцентов
-                            success: '#00FF94',
-                            winter: '#E0F7FA'
-                        }
-                    },
-                    fontFamily: {
-                        orbitron: ['Orbitron', 'sans-serif'],
-                        inter: ['Inter', 'sans-serif'],
-                    },
-                    animation: {
-                        'blob': 'blob 10s infinite',
-                        'snow': 'snow 10s linear infinite',
-                    },
-                    keyframes: {
-                        blob: {
-                            '0%, 100%': { transform: 'translate(0px, 0px) scale(1)' },
-                            '33%': { transform: 'translate(50px, -20px) scale(1.2)' },
-                            '66%': { transform: 'translate(-30px, 40px) scale(0.8)' },
-                        },
-                        snow: {
-                            '0%': { transform: 'translateY(-10vh) translateX(0)', opacity: 1 },
-                            '100%': { transform: 'translateY(100vh) translateX(20px)', opacity: 0.3 }
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-
+    <title>LUNA RECODE | Next-Gen Minecraft Client</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;600&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #9d4edd;
+            --accent: #e0aaff;
+            --bg-dark: #0a0a0c;
+            --glass: rgba(20, 20, 25, 0.7);
+            --border: rgba(157, 78, 221, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: default;
+        }
+
         body {
-            background-color: #050A18;
-            color: #ffffff;
-            overflow-x: hidden;
+            background-color: var(--bg-dark);
+            color: #fff;
+            font-family: 'Exo 2', sans-serif;
+            overflow: hidden;
+            height: 100vh;
         }
 
-        /* Эффект снега */
-        .snowflake {
+        /* --- BACKGROUND & PARTICLES --- */
+        #canvas-bg {
             position: fixed;
-            top: -10px;
-            color: white;
-            user-select: none;
-            z-index: 1;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            filter: blur(1px);
+        }
+
+        .overlay-vignette {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.8) 100%);
             pointer-events: none;
-            animation: snow linear infinite;
+            z-index: 1;
         }
 
-        .glass {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .glass-panel {
-            background: rgba(5, 10, 24, 0.8);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(0, 212, 255, 0.2);
-        }
-
-        .text-glow-winter {
-            text-shadow: 0 0 15px rgba(0, 212, 255, 0.5), 0 0 30px rgba(255, 255, 255, 0.2);
+        /* --- INTRO ANIMATION --- */
+        .intro-screen {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            background: #000;
+            animation: fadeOutIntro 1s ease 3.5s forwards;
         }
 
-        .reveal {
+        .glitch-wrapper {
+            position: relative;
+        }
+
+        .intro-logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 5rem;
+            font-weight: 900;
+            letter-spacing: 15px;
+            color: var(--primary);
+            text-transform: uppercase;
+            text-shadow: 0 0 20px var(--primary);
+            animation: logoScale 3s ease-out forwards;
+        }
+
+        @keyframes logoScale {
+            0% { transform: scale(0.8); opacity: 0; letter-spacing: 40px; filter: blur(10px); }
+            50% { opacity: 1; filter: blur(0); }
+            100% { transform: scale(1.1); letter-spacing: 15px; opacity: 1; }
+        }
+
+        @keyframes fadeOutIntro {
+            to { opacity: 0; visibility: hidden; }
+        }
+
+        /* --- MAIN CONTENT --- */
+        .main-ui {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            z-index: 10;
             opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.8s ease-out;
+            animation: fadeInUI 1.5s ease 4s forwards;
         }
-        .reveal.active {
-            opacity: 1;
-            transform: translateY(0);
+
+        @keyframes fadeInUI {
+            to { opacity: 1; }
+        }
+
+        h1.title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 4rem;
+            margin-bottom: 10px;
+            background: linear-gradient(to bottom, #fff, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 15px rgba(157, 78, 221, 0.5));
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            margin-bottom: 40px;
+            opacity: 0.8;
+        }
+
+        /* --- BUTTONS --- */
+        .btn-premium {
+            padding: 20px 60px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #fff;
+            background: rgba(157, 78, 221, 0.1);
+            border: 2px solid var(--primary);
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+            transition: 0.4s;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0 0 20px rgba(157, 78, 221, 0.2);
+        }
+
+        .btn-premium:hover {
+            background: var(--primary);
+            box-shadow: 0 0 50px var(--primary);
+            transform: translateY(-5px) scale(1.05);
+        }
+
+        .btn-premium::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: 0.5s;
+        }
+
+        .btn-premium:hover::before {
+            left: 100%;
+        }
+
+        /* --- MODAL --- */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(10px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+
+        .modal-card {
+            background: var(--glass);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            width: 450px;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            transform: translateY(30px);
+            transition: 0.5s;
+        }
+
+        .modal-overlay.active { display: flex; }
+        .modal-overlay.active .modal-card { transform: translateY(0); }
+
+        .modal-title {
+            font-family: 'Orbitron', sans-serif;
+            margin-bottom: 30px;
+            font-size: 1.4rem;
+            color: var(--accent);
+        }
+
+        .step-item {
+            display: flex;
+            align-items: center;
+            background: rgba(255,255,255,0.05);
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid transparent;
+            transition: 0.3s;
+            text-decoration: none;
+            color: #fff;
+        }
+
+        .step-item:hover {
+            border-color: var(--primary);
+            background: rgba(157, 78, 221, 0.1);
+        }
+
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--primary);
+            border-radius: 4px;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: transparent;
+        }
+
+        .step-item.checked .checkbox {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        #final-download {
+            margin-top: 20px;
+            display: none;
+            width: 100%;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* --- SCANLINE EFFECT --- */
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 4px, 3px 100%;
+            pointer-events: none;
+            z-index: 999;
         }
     </style>
 </head>
-<body class="font-inter selection:bg-luna-primary selection:text-white">
+<body>
 
-    <div id="snow-container"></div>
-
-    <div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
-        <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-900 opacity-30 blur-[150px] rounded-full animate-blob"></div>
-        <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-cyan-900 opacity-20 blur-[150px] rounded-full animate-blob"></div>
+    <div class="intro-screen">
+        <div class="glitch-wrapper">
+            <div class="intro-logo">LUNA RECODE</div>
+        </div>
     </div>
 
-    <div id="app-container" class="relative z-10 transition-all duration-500">
-        
-        <nav class="w-full py-6 px-6 md:px-12 flex justify-between items-center fixed top-0 z-50 glass">
-            <div class="text-xl font-orbitron font-bold tracking-wider flex items-center gap-2">
-                <i data-lucide="snowflake" class="text-luna-primary animate-spin-slow"></i>
-                LUNA <span class="text-luna-primary">WINTER</span>
-            </div>
-            <div class="hidden md:flex gap-6 text-sm text-gray-400 font-medium">
-                <a href="#features" class="hover:text-luna-primary transition-colors">Функции</a>
-                <a href="#roadmap" class="hover:text-luna-primary transition-colors">Планы</a>
-                <a href="https://t.me/LunaCLientt" class="hover:text-luna-primary transition-colors">Telegram</a>
-            </div>
-            <button onclick="goToAccess()" class="bg-luna-primary/10 border border-luna-primary/50 hover:bg-luna-primary hover:text-white text-luna-primary px-5 py-2 rounded-lg font-orbitron text-xs transition-all duration-300">
-                WINTER ACCESS
-            </button>
-        </nav>
+    <div class="overlay-vignette"></div>
+    <canvas id="canvas-bg"></canvas>
 
-        <div id="landing-page">
+    <div class="main-ui">
+        <h1 class="title">LUNA RECODE</h1>
+        <p class="subtitle">Наш чит выпустил бету</p>
+        <button class="btn-premium" onclick="openModal()">[ СКАЧАТЬ ]</button>
+    </div>
+
+    <div class="modal-overlay" id="modal">
+        <div class="modal-card">
+            <h2 class="modal-title">Чтобы разблокировать скачивание</h2>
             
-            <section class="min-h-screen flex flex-col justify-center items-center text-center px-4 pt-20">
-                <div class="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-white/5 border border-white/10 text-luna-winter text-xs font-orbitron tracking-widest mb-6">
-                    <i data-lucide="gift" class="w-4 h-4 text-luna-accent"></i>
-                    NEW YEAR UPDATE: RELEASED
-                </div>
-                
-                <h1 class="font-orbitron text-5xl md:text-8xl font-black mb-4 bg-clip-text text-transparent bg-gradient-to-b from-white via-blue-100 to-luna-primary text-glow-winter leading-tight">
-                    LUNA DLC<br>
-                    <span class="text-2xl md:text-5xl opacity-80">WINTER EDITION</span>
-                </h1>
-                
-                <p class="font-inter text-gray-300 max-w-2xl text-lg md:text-xl mb-10 leading-relaxed">
-                    Встречай праздники с обновленным софтом. <br>
-                    Ледяная стабильность, новые обходы и зимний визуал.
-                </p>
-                
-                <div class="flex flex-col md:flex-row gap-4">
-                    <button onclick="goToAccess()" class="group relative px-10 py-5 bg-gradient-to-r from-luna-primary to-blue-600 text-white font-orbitron font-bold rounded-xl shadow-[0_0_40px_-10px_rgba(0,212,255,0.5)] transition-all hover:scale-105 active:scale-95">
-                        <span class="relative flex items-center gap-2">
-                            ЗАБРАТЬ ПОДАРОК <i data-lucide="sparkles"></i>
-                        </span>
-                    </button>
-                    <a href="#features" class="px-10 py-5 glass text-white font-orbitron font-bold rounded-xl hover:bg-white/10 transition-all border border-white/20">
-                        ЧТО НОВОГО?
-                    </a>
-                </div>
+            <a href="https://t.me/LunaCLientt" target="_blank" class="step-item" onclick="checkStep(this, 'tg')">
+                <div class="checkbox">✓</div>
+                <span>Подписаться на Telegram</span>
+            </a>
 
-                <div class="mt-16 glass px-8 py-6 rounded-3xl flex gap-8 md:gap-12 border-luna-primary/20">
-                    <div class="text-center">
-                        <div id="days" class="text-4xl font-orbitron font-bold text-white">00</div>
-                        <div class="text-[10px] text-luna-primary uppercase tracking-[0.2em]">Дней</div>
-                    </div>
-                    <div class="text-center">
-                        <div id="hours" class="text-4xl font-orbitron font-bold text-white">00</div>
-                        <div class="text-[10px] text-luna-primary uppercase tracking-[0.2em]">Часов</div>
-                    </div>
-                    <div class="text-center">
-                        <div id="minutes" class="text-4xl font-orbitron font-bold text-white">00</div>
-                        <div class="text-[10px] text-luna-primary uppercase tracking-[0.2em]">Минут</div>
-                    </div>
-                </div>
-                <p class="mt-4 text-[10px] text-white/40 font-orbitron tracking-[0.3em]">ОТЧЕТ ДО НОВОГО 2026 ГОДА</p>
-            </section>
+            <a href="https://www.youtube.com/@PinkyPotpu" target="_blank" class="step-item" onclick="checkStep(this, 'yt')">
+                <div class="checkbox">✓</div>
+                <span>Подписаться на YouTube</span>
+            </a>
 
-            <section id="features" class="py-24 px-6 max-w-7xl mx-auto">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div class="glass p-8 rounded-3xl border-white/5 hover:border-luna-primary/40 transition-all reveal">
-                        <div class="w-14 h-14 bg-luna-primary/10 rounded-2xl flex items-center justify-center mb-6 text-luna-primary">
-                            <i data-lucide="zap"></i>
-                        </div>
-                        <h3 class="font-orbitron text-xl font-bold mb-3">Frost Optimization</h3>
-                        <p class="text-gray-400 text-sm">Прирост FPS до 40% благодаря новому методу рендеринга в холодную погоду.</p>
-                    </div>
-                    <div class="glass p-8 rounded-3xl border-white/5 hover:border-luna-primary/40 transition-all reveal">
-                        <div class="w-14 h-14 bg-luna-primary/10 rounded-2xl flex items-center justify-center mb-6 text-luna-primary">
-                            <i data-lucide="shield-check"></i>
-                        </div>
-                        <h3 class="font-orbitron text-xl font-bold mb-3">Holiday Bypass</h3>
-                        <p class="text-gray-400 text-sm">Обходы всех популярных античитов обновлены под праздничные ивенты.</p>
-                    </div>
-                    <div class="glass p-8 rounded-3xl border-white/5 hover:border-luna-primary/40 transition-all reveal">
-                        <div class="w-14 h-14 bg-luna-primary/10 rounded-2xl flex items-center justify-center mb-6 text-luna-primary">
-                            <i data-lucide="palette"></i>
-                        </div>
-                        <h3 class="font-orbitron text-xl font-bold mb-3">Winter Visuals</h3>
-                        <p class="text-gray-400 text-sm">Эксклюзивные ESP-боксы в стиле "Ice" и снежные трассеры.</p>
-                    </div>
-                </div>
-            </section>
-
-            <footer class="border-t border-white/5 bg-black/40 backdrop-blur-xl py-12 text-center">
-                <div class="max-w-6xl mx-auto px-6">
-                    <div class="flex items-center justify-center gap-3 text-2xl font-orbitron font-bold text-white mb-6">
-                         LUNA <span class="text-luna-primary">DLC</span>
-                    </div>
-                    <p class="text-gray-500 text-xs mb-4">Счастливого Нового Года и приятной игры без банов!</p>
-                    <p class="text-gray-700 text-[10px] font-mono tracking-widest uppercase">© 2026 WINTER VERSION v0.9.0</p>
-                </div>
-            </footer>
-        </div>
-
-        <div id="access-page" class="hidden min-h-screen flex items-center justify-center p-4">
-             <button onclick="goToHome()" class="absolute top-8 left-8 flex items-center gap-2 text-white/50 hover:text-white transition-colors">
-                <i data-lucide="arrow-left"></i> Назад
-            </button>
-            <div class="max-w-md w-full glass-panel rounded-[2rem] p-10 box-glow text-center">
-                <i data-lucide="gift" class="w-16 h-16 text-luna-primary mx-auto mb-6"></i>
-                <h2 class="font-orbitron text-2xl font-bold mb-4">Зимний доступ</h2>
-                <p class="text-gray-400 text-sm mb-8">Подпишись на канал, чтобы разблокировать зимнюю версию клиента.</p>
-                
-                <a href="https://t.me/LunaCLientt" target="_blank" onclick="markStepDone(1)" class="flex items-center justify-between p-5 rounded-2xl bg-white/5 border border-white/10 mb-6 hover:bg-white/10 transition-all">
-                    <span class="font-bold">Telegram Channel</span>
-                    <i data-lucide="external-link" class="w-4 h-4"></i>
-                </a>
-
-                <button id="check-btn" onclick="checkSubscription()" class="w-full py-4 bg-luna-primary text-white font-orbitron font-bold rounded-2xl shadow-lg shadow-blue-500/20">
-                    ПРОВЕРИТЬ И СКАЧАТЬ
-                </button>
-
-                <div id="loading-state" class="hidden mt-6">
-                    <div class="w-8 h-8 border-2 border-luna-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-                </div>
-
-                <div id="success-state" class="hidden mt-6 animate-bounce">
-                    <a href="https://drive.google.com/file/d/1sviJ-8cnDNF9gG6GgfVudWPIAP_y6p-H/view?usp=sharing" class="text-luna-success font-bold underline">СКАЧАТЬ WINTER DLC</a>
-                </div>
-            </div>
+            <a href="https://drive.google.com/file/d/1sviJ-8cnDNF9gG6GgfVudWPIAP_y6p-H/view?usp=drive_link" 
+               id="final-download" class="btn-premium" style="font-size: 1rem; padding: 15px;">
+                СКАЧАТЬ БЕТУ
+            </a>
         </div>
     </div>
 
     <script>
-        lucide.createIcons();
+        // --- BACKGROUND PARTICLES ---
+        const canvas = document.getElementById('canvas-bg');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
 
-        // --- ЛОГИКА СНЕГА ---
-        function createSnowflake() {
-            const snow = document.createElement('div');
-            snow.classList.add('snowflake');
-            snow.innerHTML = '●';
-            snow.style.left = Math.random() * 100 + 'vw';
-            snow.style.animationDuration = Math.random() * 3 + 7 + 's'; // 7-10 сек
-            snow.style.opacity = Math.random();
-            snow.style.fontSize = Math.random() * 10 + 5 + 'px';
-            
-            document.getElementById('snow-container').appendChild(snow);
-            
-            setTimeout(() => { snow.remove(); }, 10000);
-        }
-        setInterval(createSnowflake, 200);
-
-        // --- ТАЙМЕР ДО НОВОГО ГОДА 2026 ---
-        const newYear = new Date('January 1, 2026 00:00:00').getTime();
-
-        function updateTimer() {
-            const now = new Date().getTime();
-            const diff = newYear - now;
-
-            const d = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
-            document.getElementById('days').innerText = d < 10 ? '0' + d : d;
-            document.getElementById('hours').innerText = h < 10 ? '0' + h : h;
-            document.getElementById('minutes').innerText = m < 10 ? '0' + m : m;
-        }
-        setInterval(updateTimer, 1000);
-        updateTimer();
-
-        // --- НАВИГАЦИЯ ---
-        function goToAccess() {
-            document.getElementById('app-container').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('landing-page').classList.add('hidden');
-                document.getElementById('access-page').classList.remove('hidden');
-                document.getElementById('app-container').style.opacity = '1';
-            }, 300);
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
         }
 
-        function goToHome() {
-            document.getElementById('app-container').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('access-page').classList.add('hidden');
-                document.getElementById('landing-page').classList.remove('hidden');
-                document.getElementById('app-container').style.opacity = '1';
-            }, 300);
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 1;
+                this.speedX = Math.random() * 0.5 - 0.25;
+                this.speedY = Math.random() * 0.5 - 0.25;
+                this.life = Math.random() * 1;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.reset();
+            }
+            draw() {
+                ctx.fillStyle = `rgba(157, 78, 221, ${this.life})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
         }
 
-        // --- ПРОВЕРКА (Эмуляция) ---
-        let subscribed = false;
-        function markStepDone() { subscribed = true; }
-        function checkSubscription() {
-            const btn = document.getElementById('check-btn');
-            const loader = document.getElementById('loading-state');
-            btn.classList.add('hidden');
-            loader.classList.remove('hidden');
-            
-            setTimeout(() => {
-                loader.classList.add('hidden');
-                if(subscribed) {
-                    document.getElementById('success-state').classList.remove('hidden');
-                } else {
-                    btn.classList.remove('hidden');
-                    alert('Сначала подпишись на канал!');
-                }
-            }, 1500);
-        }
+        for (let i = 0; i < 100; i++) particles.push(new Particle());
 
-        // Анимация при скролле
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) entry.target.classList.add('active');
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
             });
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // --- MODAL LOGIC ---
+        let steps = { tg: false, yt: false };
+
+        function openModal() {
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function checkStep(el, type) {
+            el.classList.add('checked');
+            steps[type] = true;
+            
+            if (steps.tg && steps.yt) {
+                setTimeout(() => {
+                    document.getElementById('final-download').style.display = 'block';
+                }, 800);
+            }
+        }
+
+        // Close modal on outside click
+        document.getElementById('modal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('modal')) {
+                document.getElementById('modal').classList.remove('active');
+            }
         });
-        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
     </script>
 </body>
 </html>
